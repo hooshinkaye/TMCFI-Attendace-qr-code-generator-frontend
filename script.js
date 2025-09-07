@@ -366,35 +366,42 @@ document.addEventListener('DOMContentLoaded', () => {
   resetBtn && resetBtn.addEventListener('click', resetForm);
   dlBtn && dlBtn.addEventListener('click', downloadQR);
 
-  darkToggle && darkToggle.addEventListener('click', ()=>{
-    document.documentElement.classList.toggle('dark-mode');
-    document.body.classList.toggle('dark-mode');
+  // ✅ Single dark mode toggle
+  darkToggle && darkToggle.addEventListener('click', () => {
+    const root = document.documentElement;
+    const setDark = !root.classList.contains('dark-mode');
+
+    root.classList.toggle('dark-mode', setDark);
+    document.body.classList.toggle('dark-mode', setDark);
+
+    // Update icon
+    darkToggle.textContent = setDark ? '☀️' : '🌙';
+
+    // Re-generate QR if it exists
+    const qrcodeDiv = $id('qrcode');
+    const txt = $id('qrText') ? $id('qrText').innerText : '';
+    if (qrcodeDiv && txt) {
+      qrcodeDiv.innerHTML = '';
+      new QRCode(qrcodeDiv, {
+        text: txt,
+        width: 220,
+        height: 220,
+        colorDark: setDark ? "#FFFFFF" : "#111111",
+        colorLight: "transparent"
+      });
+    }
   });
 
+  // photo wiring
   wirePhoto();
+
+  // hide QR initially
   hideQRInitially();
+
   window.addEventListener('load', ()=> document.body.classList.add('loaded'));
 });
 
-// ---------- SaveToServer helper ----------
-async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
-  try {
-    const response = await fetch("https://tmcfi-attendace-qr-code-generator.onrender.com/save_student", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        id: id,
-        name: name,
-        schedule: schedule,
-        photo: photoBase64,
-        qr: qrBase64
-      })
-    });
-    const result = await response.json();
-    console.log(result);
-    alert("Student record saved successfully!");
-  } catch (err) {
-    console.error(err);
-    alert("Error saving student record.");
-  }
-}
+// ❌ REMOVE THIS → was crashing your script
+// saveToServer(studentId, fullName, scheduleData, photoBase64, qrBase64);
+
+
