@@ -1,8 +1,6 @@
-/* script.js — Complete fixed version */
 document.addEventListener('DOMContentLoaded', function() {
   console.log('DOM loaded, initializing...');
   
-  // ---------- Helpers ----------
   function mk(q) { return document.querySelector(q); }
   function $id(id) { return document.getElementById(id); }
 
@@ -20,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     container.appendChild(toast);
 
-    // Auto remove after 4s
+    
     setTimeout(() => {
       toast.style.animation = 'fadeSlideOut 0.4s forwards';
       setTimeout(() => toast.remove(), 400);
@@ -46,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 5000);
   }
 
-  // ensure QR hidden on load
+  
   function hideQRInitially() {
     const qrSection = $id('qrSection');
     const dl = $id('downloadBtn');
@@ -54,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (dl) dl.style.display = 'none';
   }
 
-  // ---------- Subject handling ----------
+
   function addSubject() {
     const d = document.createElement('details');
     d.className = 'subject';
@@ -86,25 +84,25 @@ document.addEventListener('DOMContentLoaded', function() {
       </div>
     `;
 
-    // add fade-in animation
+   
     d.style.animation = 'fadeInSubject 0.36s ease';
 
     const area = $id('subjectsArea');
     area.appendChild(d);
 
-    // wire remove button with animation
+    
     const rem = d.querySelector('.remove-subject');
     rem.addEventListener('click', () => {
       d.classList.add('removing');
       setTimeout(() => d.remove(), 360);
     });
 
-    // wire chips
+   
     d.querySelectorAll('.chip').forEach(chip => {
       chip.addEventListener('click', () => chip.classList.toggle('active'));
     });
 
-    // autofocus the subject name
+    
     const firstInput = d.querySelector('.subjName');
     if (firstInput) {
       setTimeout(() => firstInput.focus(), 80);
@@ -113,7 +111,7 @@ document.addEventListener('DOMContentLoaded', function() {
     return d;
   }
 
-  // helper: build schedule array
+  
   function collectScheduleArray() {
     const schedule = [];
     document.querySelectorAll('details.subject').forEach(det => {
@@ -128,14 +126,13 @@ document.addEventListener('DOMContentLoaded', function() {
     return schedule;
   }
 
-  // ---------- Generate QR ----------
+
   function generateQR() {
     if (typeof QRCode === 'undefined') {
       showToast('QR library not loaded. Check the included script.', 'error');
       return;
     }
 
-    // match HTML IDs
     const idInput = $id("studentId");
     const nameInput = $id("name");
     const qrcodeDiv = $id("qrcode");
@@ -143,7 +140,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const qrSection = $id("qrSection");
     const dl = $id("downloadBtn");
 
-    // basic validation
+   
     const id = (idInput && idInput.value) ? idInput.value.trim() : '';
     const name = (nameInput && nameInput.value) ? nameInput.value.trim() : '';
     if (!id || !name) {
@@ -153,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // gather subjects
+   
     const subjects = [];
     let hasIncomplete = false;
     document.querySelectorAll('details.subject').forEach(det => {
@@ -196,7 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const payload = `${id}|${name}|${subjects.join(',')}`;
 
-    // render QR
+
     qrcodeDiv.innerHTML = '';
     const dark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
     new QRCode(qrcodeDiv, {
@@ -207,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
       colorLight: "transparent"
     });
 
-    // show QR area with animation
+    
     if (qrSection) {
       qrSection.style.display = 'block';
       qrSection.classList.remove('fade-in');
@@ -217,13 +214,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (qrTextDiv) qrTextDiv.innerText = payload;
     if (dl) dl.style.display = 'inline-block';
 
-    // scroll QR into view on small screens
+    
     setTimeout(() => {
       qrSection && qrSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 140);
   }
 
-  // ---------- Download QR (local only) ----------
+ 
   function downloadQRLocally() {
     const qrcodeDiv = document.getElementById('qrcode');
     if (!qrcodeDiv) {
@@ -231,14 +228,14 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Get student info for filename
+   
     const fullName = ($id('name') && $id('name').value) ? $id('name').value.trim() : '';
     const studentId = ($id('studentId') && $id('studentId').value) ? $id('studentId').value.trim() : '';
 
-    // Create filename using last name or fallback
+    
     let filename = 'qr_code.png';
     if (fullName) {
-      // Extract last name from full name
+      
       const parts = fullName.split(/\s+/).filter(Boolean);
       if (parts.length > 1) {
         filename = `${parts[parts.length - 1]}_qr.png`;
@@ -249,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
       filename = `${studentId}_qr.png`;
     }
 
-    // Get QR image data
+    
     const canvas = qrcodeDiv.querySelector('canvas');
     const img = qrcodeDiv.querySelector('img');
     let dataURL = '';
@@ -269,7 +266,7 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Download the file
+    
     try {
       const link = document.createElement('a');
       link.href = dataURL;
@@ -284,7 +281,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ---------- Save to Server ----------
+  
   async function saveToServer() {
     try {
       // Get form values
@@ -305,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
 
-      // Validation
+      
       if (!studentId || !fullName) {
         showToast('Student ID and Full Name are required.', 'error');
         return;
@@ -316,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
 
-      // Extract last name from full name
+      
       let lastName = 'attendance';
       const nameParts = fullName.split(/\s+/).filter(Boolean);
       if (nameParts.length > 0) {
@@ -333,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       console.log('Saving to server:', payload);
 
-      // Send to server
+      
       showToast('Saving to server...', 'info');
       
       const response = await fetch('https://tmcfi-attendace-qr-code-generator.onrender.com/save', {
@@ -361,14 +358,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ---------- Reset form ----------
+  
   function resetForm() {
     const container = document.querySelector('.container');
     if (!container) return;
     container.classList.add('resetting');
 
     setTimeout(() => {
-      // clear fields
+      
       if ($id('studentId')) $id('studentId').value = '';
       if ($id('name')) $id('name').value = '';
       if ($id('subjectsArea')) $id('subjectsArea').innerHTML = '';
@@ -379,7 +376,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if ($id('photo-preview')) $id('photo-preview').innerHTML = '';
       if ($id('photoFilename')) $id('photoFilename').textContent = 'No file chosen';
 
-      // clear QR
+      
       if ($id('qrcode')) $id('qrcode').innerHTML = '';
       if ($id('qrText')) $id('qrText').innerText = '';
       
@@ -395,12 +392,12 @@ document.addEventListener('DOMContentLoaded', function() {
       container.classList.remove('resetting');
       showToast('Form reset', 'info');
       
-      // focus on first field
+      
       if ($id('studentId')) $id('studentId').focus();
     }, 420);
   }
 
-  // ---------- Photo upload wiring ----------
+  
   function wirePhoto() {
     const photoBtn = $id('photoBtn');
     const photoInput = $id('photoInput');
@@ -437,7 +434,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // ---------- Initialize everything ----------
+  
   function initializeApp() {
     console.log('Initializing app...');
     
@@ -473,7 +470,7 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log('Save button wired');
     }
 
-    // Dark mode toggle
+    
     const darkToggle = document.querySelector('.dark-toggle') || $id('darkToggle');
     if (darkToggle) {
       darkToggle.addEventListener('click', () => {
@@ -482,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.classList.toggle('dark-mode', isDark);
         darkToggle.textContent = isDark ? '☀️' : '🌙';
 
-        // Re-render QR with new colors if it exists
+        
         const qrcodeDiv = $id('qrcode');
         const txt = $id('qrText') ? $id('qrText').innerText : '';
         if (qrcodeDiv && txt) {
@@ -498,22 +495,23 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
 
-    // Photo upload functionality
+
     wirePhoto();
     console.log('Photo upload wired');
 
-    // Hide QR initially
+
     hideQRInitially();
     console.log('QR hidden initially');
 
-    // Add one initial subject
+
     addSubject();
     
-    // Page loaded animation
+
     document.body.classList.add('loaded');
     console.log('App initialized successfully');
   }
 
-  // Start the app
+
   initializeApp();
 });
+
