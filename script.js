@@ -1,5 +1,3 @@
-/* script.js — REPLACE your existing file with this */
-
 // ---------- Helpers ----------
 function mk(q){ return document.querySelector(q); }
 function $id(id){ return document.getElementById(id); }
@@ -84,25 +82,21 @@ function addSubject() {
     </div>
   `;
 
-  // add fade-in animation (CSS keyframes handle the visuals)
   d.style.animation = 'fadeInSubject 0.36s ease';
 
   const area = $id('subjectsArea');
   area.appendChild(d);
 
-  // wire remove button with animation
   const rem = d.querySelector('.remove-subject');
   rem.addEventListener('click', () => {
     d.classList.add('removing');
-    setTimeout(()=> d.remove(), 360); // match CSS timing
+    setTimeout(()=> d.remove(), 360);
   });
 
-  // wire chips
   d.querySelectorAll('.chip').forEach(chip => {
     chip.addEventListener('click', () => chip.classList.toggle('active'));
   });
 
-  // autofocus the subject name
   const firstInput = d.querySelector('.subjName');
   if(firstInput) {
     setTimeout(()=> firstInput.focus(), 80);
@@ -120,7 +114,6 @@ function generateQR() {
   const qrSection = $id("qrSection");
   const dl = $id("downloadBtn");
 
-  // basic validation
   const id = idInput.value.trim();
   const name = nameInput.value.trim();
   if(!id || !name) {
@@ -130,7 +123,6 @@ function generateQR() {
     return;
   }
 
-  // gather subjects
   const subjects = [];
   let hasIncomplete = false;
   document.querySelectorAll('details.subject').forEach(det => {
@@ -143,7 +135,6 @@ function generateQR() {
     const start = startInput ? startInput.value : '';
     const end = endInput ? endInput.value : '';
 
-    // ignore truly empty card
     if(!subj && !days && !start && !end) return;
 
     if(subj && days && start && end) {
@@ -173,7 +164,6 @@ function generateQR() {
 
   const payload = `${id}|${name}|${subjects.join(',')}`;
 
-  // render QR
   qrcodeDiv.innerHTML = '';
   const dark = document.documentElement.classList.contains('dark-mode') || document.body.classList.contains('dark-mode');
   new QRCode(qrcodeDiv, {
@@ -184,7 +174,6 @@ function generateQR() {
     colorLight: "transparent"
   });
 
-  // show QR area with animation
   if(qrSection) {
     qrSection.style.display = 'block';
     qrSection.classList.remove('fade-in');
@@ -194,7 +183,6 @@ function generateQR() {
   if(qrTextDiv) qrTextDiv.innerText = payload;
   if(dl) dl.style.display = 'inline-block';
 
-  // scroll QR into view on small screens
   setTimeout(()=> {
     qrSection && qrSection.scrollIntoView({behavior:'smooth', block:'center'});
   }, 140);
@@ -210,34 +198,26 @@ async function downloadQR() {
     const qrcodeDiv = document.getElementById('qrcode');
     if (!qrcodeDiv) { notify('QR container (#qrcode) not found', 'error'); return; }
 
-    // qrcodejs may render canvas or img
     const canvas = qrcodeDiv.querySelector('canvas');
     const img = qrcodeDiv.querySelector('img');
     let dataURL = '';
 
     if (canvas) {
-      try {
-        dataURL = canvas.toDataURL('image/png');
-      } catch (err) {
-        console.error('canvas.toDataURL error:', err);
-      }
+      try { dataURL = canvas.toDataURL('image/png'); }
+      catch (err) { console.error('canvas.toDataURL error:', err); }
     }
-    if (!dataURL && img) {
-      dataURL = img.src;
-    }
+    if (!dataURL && img) dataURL = img.src;
     if (!dataURL) {
       notify('No QR found to download', 'error');
       return;
     }
 
-    // get student info from inputs (try many ids)
     const nameIds = ['fullName','studentName','full-name','name','full_name'];
     let fullName = '';
     for (const id of nameIds) {
       const el = document.getElementById(id);
       if (el && el.value && el.value.trim()) { fullName = el.value.trim(); break; }
     }
-    // also check qrText payload if available
     if (!fullName) {
       const qrTextEl = document.getElementById('qrText') || document.querySelector('.payload') || null;
       if (qrTextEl) {
@@ -254,10 +234,8 @@ async function downloadQR() {
 
     if (!fullName || !studentId) {
       notify('Student name or ID missing. Please fill them before saving.', 'error');
-      // still allow local download, but warn
     }
 
-    // determine last name
     let lastName = 'attendance';
     if (fullName) {
       const parts = fullName.split(/\s+/).filter(Boolean);
@@ -266,7 +244,6 @@ async function downloadQR() {
     lastName = lastName.replace(/[^a-zA-Z0-9-_]/g, '') || 'attendance';
     const filename = `${lastName}_qr.png`;
 
-    // 1) Download locally immediately
     try {
       const link = document.createElement('a');
       link.href = dataURL;
@@ -280,25 +257,14 @@ async function downloadQR() {
       notify('Local download failed (see console)', 'error');
     }
 
-    // 2) POST to backend
-    // get photo from global variable (your upload script should set window.studentPhoto)
+    // ✅ FIX: Use Render backend
     const photoData = window.studentPhoto || '';
-
-    const payload = {
-      id: studentId,
-      name: fullName,
-      lastName: lastName,
-      qr: dataURL,
-      photo: photoData
-    };
-
+    const payload = { id: studentId, name: fullName, lastName: lastName, qr: dataURL, photo: photoData };
     console.log('DEBUG: Sending payload to backend:', payload);
-    // Use your backend URL
-    const backendUrl = 'http://127.0.0.1:5000/save';
+    const backendUrl = 'https://tmcfi-attendace-qr-code-generator.onrender.com/save';
 
-    // fetch with timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
     let resp;
     try {
@@ -311,14 +277,11 @@ async function downloadQR() {
       clearTimeout(timeoutId);
     } catch (err) {
       console.error('Network/fetch error sending to backend:', err);
-      notify('Network error: could not contact backend. Make sure server is running and page served via http.', 'error');
+      notify('Network error: could not contact backend.', 'error');
       return;
     }
 
-    const result = await resp.json().catch(e => {
-      console.error('Error parsing JSON response:', e);
-      return null;
-    });
+    const result = await resp.json().catch(e => { console.error('Error parsing JSON response:', e); return null; });
     console.log('DEBUG: backend response', resp, result);
 
     if (resp.ok) {
@@ -334,14 +297,13 @@ async function downloadQR() {
   }
 }
 
-// ---------- Reset form (with animation) ----------
+// ---------- Reset form ----------
 function resetForm() {
   const container = document.querySelector('.container');
   if(!container) return;
   container.classList.add('resetting');
 
   setTimeout(()=> {
-    // clear fields
     $id('studentID').value = '';
     $id('studentName').value = '';
     $id('subjectsArea').innerHTML = '';
@@ -350,7 +312,6 @@ function resetForm() {
     $id('photo-preview') && ($id('photo-preview').innerHTML = '');
     $id('photoFilename') && ($id('photoFilename').textContent = 'No file chosen');
 
-    // clear QR
     $id('qrcode') && ($id('qrcode').innerHTML = '');
     $id('qrText') && ($id('qrText').innerText = '');
     const qrSection = $id('qrSection');
@@ -361,9 +322,8 @@ function resetForm() {
 
     container.classList.remove('resetting');
     showToast('Form reset', 'info');
-    // focus
     $id('studentID') && $id('studentID').focus();
-  }, 420); // wait for reset animation
+  }, 420);
 }
 
 // ---------- Photo upload wiring ----------
@@ -380,7 +340,6 @@ function wirePhoto() {
       if(preview) preview.innerHTML = `<img src="${ev.target.result}" alt="photo">`;
       if(removeBtn) removeBtn.style.display = 'inline-block';
       if(filenameEl) filenameEl.textContent = f.name;
-      // store to global if you use it later
       window.studentPhoto = ev.target.result;
     };
     reader.readAsDataURL(f);
@@ -396,7 +355,6 @@ function wirePhoto() {
 
 // ---------- Initialization ----------
 document.addEventListener('DOMContentLoaded', () => {
-  // wire buttons
   const addBtn = $id('addSubject');
   const genBtn = $id('generateQR');
   const resetBtn = $id('resetBtn');
@@ -407,86 +365,21 @@ document.addEventListener('DOMContentLoaded', () => {
   genBtn && genBtn.addEventListener('click', generateQR);
   resetBtn && resetBtn.addEventListener('click', resetForm);
   dlBtn && dlBtn.addEventListener('click', downloadQR);
+
   darkToggle && darkToggle.addEventListener('click', ()=>{
     document.documentElement.classList.toggle('dark-mode');
     document.body.classList.toggle('dark-mode');
-    darkToggle && darkToggle.addEventListener('click', ()=>{
-  const root = document.documentElement;
-  const isDark = root.classList.toggle('dark-mode');
-  document.body.classList.toggle('dark-mode', isDark);
-
-  // Add a temporary "mode-transition" class for smooth fade
-  document.body.classList.add('mode-transition');
-  setTimeout(()=> document.body.classList.remove('mode-transition'), 500);
-
-  // Update icon
-  darkToggle.textContent = isDark ? '☀️' : '🌙';
-});
-
-    // re-generate QR colors if qrcode exists (simple way: hide and show)
-    const qrcodeDiv = $id('qrcode');
-    if(qrcodeDiv && qrcodeDiv.childNodes.length > 0) {
-      const old = qrcodeDiv.innerHTML;
-      qrcodeDiv.innerHTML = '';
-      // small delay then re-generate with same text
-      setTimeout(()=> {
-        const txt = $id('qrText') ? $id('qrText').innerText : '';
-        if(txt) new QRCode(qrcodeDiv, { text: txt, width: 220, height: 220, colorDark: document.documentElement.classList.contains('dark-mode') ? "#FFFFFF" : "#111111", colorLight: "transparent" });
-      }, 80);
-    }
   });
 
-  // photo wiring
   wirePhoto();
-
-  // hide QR initially
   hideQRInitially();
-
-  // page-level fade-in
   window.addEventListener('load', ()=> document.body.classList.add('loaded'));
 });
 
-darkToggle.addEventListener('click', () => {
-  const root = document.documentElement;
-  const setDark = !root.classList.contains('dark-mode');
-
-  // Spin effect for button
-  darkToggle.classList.add('spin');
-  setTimeout(() => darkToggle.classList.remove('spin'), 400);
-
-  if (setDark) {
-    root.classList.add('dark-mode');
-    darkToggle.textContent = '☀️';
-    try { localStorage.setItem('attendance_dark', '1'); } catch (e) {}
-  } else {
-    root.classList.remove('dark-mode');
-    darkToggle.textContent = '🌙';
-    try { localStorage.setItem('attendance_dark', '0'); } catch (e) {}
-  }
-});
-
-// Run after DOM is ready (put inside DOMContentLoaded or at end of script)
-document.querySelectorAll('.container .topbar').forEach(tb => {
-  const toggle = tb.querySelector('.dark-toggle') || tb.querySelector('#darkToggle');
-  const title = tb.querySelector('h1');
-  if (title) {
-    // ensure title can shrink in a flex layout
-    title.style.minWidth = '0';
-    title.style.whiteSpace = 'nowrap';
-    title.style.overflow = 'hidden';
-    title.style.textOverflow = 'ellipsis';
-  }
-  if (toggle && tb.lastElementChild !== toggle) {
-    // move toggle to be the last child so it sits at the far right
-    tb.appendChild(toggle);
-  }
-});
-
-saveToServer(studentId, fullName, scheduleData, photoBase64, qrBase64);
-
+// ---------- SaveToServer helper ----------
 async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
   try {
-    const response = await fetch("http://127.0.0.1:5000/save_student", {
+    const response = await fetch("https://tmcfi-attendace-qr-code-generator.onrender.com/save_student", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
