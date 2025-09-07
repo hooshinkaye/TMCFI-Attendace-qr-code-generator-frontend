@@ -512,4 +512,65 @@ async function saveToServer(id, name, schedule, photoBase64, qrBase64) {
   }
 }
 
-// IMPORTANT: Do not call saveToServer(...) automatically on load — variables must be defined first.
+
+// ---------- Save to Server ----------
+async function saveToServer() {
+  const studentId = $id('studentId').value.trim();
+  const fullName = $id('name').value.trim();
+  const photoData = window.studentPhoto || '';
+  const qrCanvas = $id('qrcode').querySelector('canvas');
+  const qrImg = $id('qrcode').querySelector('img');
+  let qrData = '';
+  if (qrCanvas) qrData = qrCanvas.toDataURL('image/png');
+  if (!qrData && qrImg) qrData = qrImg.src;
+
+  if (!studentId || !fullName || !qrData) {
+    showToast('Missing Student ID, Full Name, or QR code. Please generate first.', 'error');
+    return;
+  }
+
+  // derive last name from full name
+  let lastName = 'attendance';
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length) lastName = parts[parts.length - 1].replace(/[^a-zA-Z0-9-_]/g, '') || 'attendance';
+
+  const payload = {
+    id: studentId,
+    name: fullName,
+    lastName: lastName,
+    qr: qrData,
+    photo: photoData
+  };
+
+  try {
+    const resp = await fetch('https://tmcfi-attendace-qr-code-generator.onrender.com/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const result = await resp.json();
+    if (resp.ok) {
+      showToast(result.message || 'Saved to backend', 'success');
+      console.log('Saved files:', result.saved);
+    } else {
+      showToast(`Backend error: ${result.error || resp.statusText}`, 'error');
+    }
+  } catch (err) {
+    console.error('saveToServer error:', err);
+    showToast('Error saving to backend', 'error');
+  }
+}
+
+// ---------- Initialization ----------
+document.addEventListener('DOMContentLoaded', () => {
+  $id('addSubject').addEventListener('click', addSubject);
+  $id('generateBtn').addEventListener('click', generateQR);
+  $id('resetBtn').addEventListener('click', resetForm);
+  $id('downloadBtn').addEventListener('click', downloadQR);
+  $id('saveBtn').addEventListener('click', saveToServer);
+  wirePhoto();
+  hideQRInitially();
+});
+
+
