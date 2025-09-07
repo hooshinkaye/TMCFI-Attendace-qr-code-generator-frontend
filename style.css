@@ -24,7 +24,7 @@ body {
   transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Background image */
+
 .background {
   position: fixed;
   inset: 0;
@@ -37,7 +37,7 @@ body {
   filter: blur(8px) brightness(0.3);
 }
 
-/* Main wrapper */
+
 .wrapper {
   max-width: 1200px;
   margin: 30px auto;
@@ -48,7 +48,7 @@ body {
   transition: all 0.4s ease;
 }
 
-/* School info (left) */
+
 .school-info {
   flex: 1;
   color: #fff;
@@ -68,7 +68,7 @@ body {
   line-height: 1.5;
 }
 
-/* Form container (right, frosted glass) */
+
 .container {
   flex: 1.1;
   border-radius: 16px;
@@ -81,7 +81,7 @@ body {
   transition: all 0.4s ease;
 }
 
-/* Top bar - FIXED FOR MOBILE */
+
 .topbar {
   display: flex;
   justify-content: space-between;
@@ -95,9 +95,9 @@ body {
   font-size: 20px;
   font-weight: 700;
   margin: 0;
-  /* Fallback for browsers that don't support gradient text */
+
   color: var(--primary);
-  /* Gradient text for supported browsers */
+
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   background-clip: text;
@@ -110,7 +110,7 @@ body {
   text-overflow: ellipsis;
 }
 
-/* Dark mode toggle */
+
 .dark-toggle {
   background: none;
   border: none;
@@ -130,7 +130,7 @@ body {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Labels and inputs */
+
 label {
   display: block;
   font-weight: 600;
@@ -166,7 +166,7 @@ input.error {
   background: #7f1d1d;
 }
 
-/* Photo section */
+
 .photo-section {
   margin-top: 18px;
   padding: 14px;
@@ -213,7 +213,7 @@ input.error {
   box-shadow: 0 6px 18px rgba(0,0,0,0.3);
 }
 
-/* Subjects */
+
 details.subject {
   margin-top: 14px;
   border: 1px solid rgba(255,255,255,0.3);
@@ -272,7 +272,7 @@ details.subject {
   box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Toolbar buttons */
+
 .toolbar {
   display: flex;
   gap: 10px;
@@ -306,7 +306,7 @@ details.subject {
   color: #fff;
 }
 
-/* QR section */
+
 .qr-wrap {
   margin-top: 18px;
   padding: 14px;
@@ -329,7 +329,7 @@ details.subject {
   color: var(--muted);
 }
 
-/* Animations */
+
 @keyframes errorPulse {
   from { box-shadow: 0 0 0 0 rgba(239,68,68,0.25); }
   to { box-shadow: 0 0 10px 4px rgba(239,68,68,0.45); }
@@ -351,7 +351,7 @@ details.subject {
 
 .shake { animation: shake .48s ease; }
 
-/* Toast container */
+
 #toast-container {
   position: fixed;
   top: 20px;
@@ -390,9 +390,7 @@ details.subject {
   to { opacity: 0; transform: translateY(-20px); }
 }
 
-/* -------------------------
-   Mobile Optimizations
-   ------------------------- */
+
 @media (max-width: 768px) {
   body {
     padding: 10px;
@@ -478,14 +476,14 @@ details.subject {
     font-size: 14px;
   }
   
-  /* QR code sizing */
+
   #qrcode canvas, #qrcode img {
     max-width: 100%;
     height: auto;
   }
 }
 
-/* Extra small devices */
+
 @media (max-width: 480px) {
   .topbar h1 {
     font-size: 16px;
@@ -505,14 +503,14 @@ details.subject {
   }
 }
 
-/* Fix for iOS Safari */
+
 @supports (-webkit-touch-callout: none) {
   input[type="text"], input[type="time"] {
     font-size: 16px; /* Prevents zoom on focus */
   }
 }
 
-/* High contrast mode support */
+
 @media (prefers-contrast: high) {
   .topbar h1 {
     background: none;
@@ -521,7 +519,7 @@ details.subject {
   }
 }
 
-/* Reduced motion support */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
@@ -529,3 +527,4 @@ details.subject {
     transition-duration: 0.01ms !important;
   }
 }
+
