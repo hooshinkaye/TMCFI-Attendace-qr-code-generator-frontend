@@ -524,7 +524,26 @@ details.subject {
   * {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+
+    /* Force QR code to be visible on mobile */
+#qrcode canvas,
+#qrcode img {
+  display: block !important;
+  width: 200px !important;  /* fixed width */
+  height: 200px !important; /* fixed height */
+  margin: 0 auto;           /* center */
+}
+
+/* Allow it to shrink on small screens but never disappear */
+@media (max-width: 480px) {
+  #qrcode canvas,
+  #qrcode img {
+    width: 160px !important;
+    height: 160px !important;
+  }
+}
     transition-duration: 0.01ms !important;
   }
 }
+
 
